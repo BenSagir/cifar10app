@@ -43,7 +43,7 @@ export default function Star({value}) {
 
     const animateStyle = {
         transform: [{scale: animateScale}, {rotate: animateWobble}],
-        opacity: animateOpacity
+        opacity: animateOpacity,
     };
     for (let x = 1; x <= num_of_star; x++) {
         stars.push(
@@ -52,7 +52,7 @@ export default function Star({value}) {
                     <Single filled={x <= rateing ? true : false} />
                 </Animated.View>
             </TouchableWithoutFeedback>
-        )
+        );
     }
     function Single({filled}) {
 
@@ -60,22 +60,22 @@ export default function Star({value}) {
             <View>
                 <Image source={filled ? require('./star2.png') : require('./star1.png')} style={styles.img} />
             </View>
-        )
+        );
     }
 
     useEffect(() => {
         let curr = 0;
         const timer = setTimeout(() => {
-            if (value >= curr) operate(curr);
+            value >= curr ? operate(curr) : null;
             curr++;
             setTimeout(() => {
-                if (value >= curr) operate(curr);
+                value >= curr ? operate(curr) : null;
                 curr++;
                 setTimeout(() => {
-                    if (value >= curr) operate(curr);
+                    value >= curr ? operate(curr) : null;
                     curr++;
                     setTimeout(() => {
-                        if (value >= curr) operate(curr);
+                        value >= curr ? operate(curr) : null;
                         curr++;
                     }, 500);
                 }, 500);
@@ -91,7 +91,7 @@ export default function Star({value}) {
             <View style={{flexDirection: 'row'}}>{stars}</View>
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     img: {
