@@ -11,193 +11,22 @@
 
 import React, {useState, useEffect, useCallback} from 'react';
 import {Dimensions, StyleSheet, Text, TouchableOpacity, Platform, View, Image} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import ImagePicker from 'react-native-image-picker';
-import Tflite from 'tflite-react-native';
-import {RNCamera} from 'react-native-camera';
-import Notifications from './noti'
-
-
-let tflite = new Tflite();
-var modelFile = 'models/CIFAR10_model.tflite';
-var labelsFile = 'models/CIFAR_labels.txt';
+import Star from './anim/anim';
 
 function App() {
-  const [recognition, setRecognition] = useState(null);
-  const [source, setSource] = useState();
-  const [camera, setCamera] = useState();
-  const [open, setOpen] = useState(false);
-  const [score, setScore] = useState(0);
-  const [grades, setGrades] = useState([]);
 
-  function updateScore(s) {
-    let temp = parseInt(score);
-    temp += parseInt(s);
-    setScore(temp);
-    const tempg = grades;
-    tempg.push(parseInt(s));
-    setGrades(tempg);
-    console.log(tempg, 'max index val:', tempg.indexOf(Math.max(...tempg)))
-  }
-  function runModel(path) {
-    tflite.runModelOnImage(
-      {path: path}, (err, ress) => {
-        if (err) {console.log(err);}
-        else {
-          console.log(ress);
-
-          console.log(ress[0]['confidence'], ress[0].index);
-          if (ress[0].index == 0) {
-            updateScore((ress[0].confidence * 100).toFixed(0));
-          }
-          else
-            updateScore(0)
-          console.log((ress[0].confidence * 100).toFixed(0))
-          setRecognition(ress);
-        }
-      });
-  }
-  function selectGallaryImage() {
-    const options = {};
-    ImagePicker.launchImageLibrary(options, res => {
-      if (res.didCancel) {console.log('caneled');}
-      else if (res.error) {console.log('error');}
-      else if (res.customButton) {console.log('custom butt');}
-      else {
-        console.log('Libaray open');
-        var path = Platform.OS === 'ios' ? res.uri : 'file://' + res.path;
-        setSource(path);
-        console.log('path is : ' + path);
-        runModel(path);
-      }
-    });
-  }
-  function selectCamera() {
-    const options = {};
-    ImagePicker.launchCamera(options, res => {
-      if (res.didCancel) {console.log('caneled');}
-      else if (res.error) {console.log('error');}
-      else if (res.customButton) {console.log('custom butt');}
-      else {
-        console.log('Camera open');
-        var path = Platform.OS === 'ios' ? res.uri : 'file://' + res.path;
-        setSource(path);
-        console.log('path is : ' + path);
-        runModel(path);
-      }
-    });
-  }
-  async function takePic() {
-    const data = [];
-    const options = {fixOrientation: true, quality: 0.5, writeExif: false};
-    let path = (await camera.takePictureAsync(options)).uri;
-    runModel(path)
-  }
-
-
-  useEffect(() => {
-    tflite.loadModel(
-      {model: modelFile, labels: labelsFile},
-      (err, res) => {
-        if (err) {console.log(err);}
-        else {console.log('useEffect load ' + modelFile + ' model respose: ' + res);}
-      });
-  }, []);
-
-
-
-
+  const [tries, setTries] = useState(1);
   return (
     <View style={styles.main}>
-      <View style={styles.header}>
-        <Text style={styles.headText}>Gum - Not Gum Application</Text>
-        <Text style={styles.headSmallText}>This is an a presentetion of prediction of neural network that was train on GNG dataset</Text>
-      </View>
-      {
-        recognition ?
-          <View style={styles.recognition}>
-            <Image source={{uri: source}} style={styles.img} />
-            {recognition.length === 1 ?
-              <View style={styles.reconV}>
-                <Text style={styles.reconText}>{recognition[0].label + ' - ' + (recognition[0].confidence * 100).toFixed(0) + '%'}</Text>
-                <Text style={styles.reconText}>Score - {score}</Text>
-              </View>
-              :
-              <View>
-                <View style={styles.reconV}>
-                  <Text style={styles.reconText}>Score - {score}</Text>
-
-                  <Text style={styles.text}>1st peak:</Text>
-                  <Text style={styles.reconText}>{recognition[0].label + ' - ' + (recognition[0].confidence * 100).toFixed(0) + '%'}</Text>
-                </View>
-                {recognition[1] ?
-                  <View style={styles.reconV}>
-                    <Text style={styles.text}>2nd peak:</Text>
-                    <Text style={styles.reconText}>{recognition[1].label + ' - ' + (recognition[1].confidence * 100).toFixed(0) + '%'}</Text>
-                  </View>
-                  : <View />}
-                {recognition[2] ?
-                  <View style={styles.reconV}>
-                    <Text style={styles.text}>3rd peak:</Text>
-                    <Text style={styles.reconText}>{recognition[2].label + ' - ' + (recognition[2].confidence * 100).toFixed(0) + '%'}</Text>
-                  </View>
-                  : <View />}
-              </View>
-            }
-          </View> : <View />
-      }
-      {
-        open ?
-          <RNCamera
-            ref={(ref) => setCamera(ref)}
-            captureAudio={false}
-            style={{
-              flex: 1,
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-            type={RNCamera.Constants.Type.back}
-            flashMode={RNCamera.Constants.FlashMode.on}
-            androidCameraPermissionOptions={{
-              title: 'Permission to use camera',
-              message: 'We need your permission to use your camera',
-              buttonPositive: 'Ok',
-              buttonNegative: 'Cancel',
-              forceUpOrientation: true,
-            }} ><View style={styles.buttons}>
-              <TouchableOpacity
-                style={[styles.snap, styles.button]}
-                onPress={() => takePic()}>
-                <Text>click</Text>
-              </TouchableOpacity>
-            </View></RNCamera>
-          :
-          null
-      }
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity onPress={() => selectGallaryImage()}>
-          <View style={styles.button}>
-            <Text style={styles.WT}>Camera Roll</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => selectCamera()}>
-          <View style={styles.button}>
-            <Text style={styles.WT}>Take a Photo</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity onPress={() => Notifications()}>
-        <View style={styles.button}>
-          <Text style={styles.WT}>Premission</Text>
-        </View>
-      </TouchableOpacity>
+      <Star value={4 - tries} />
     </View >
   );
 }
 
 const styles = StyleSheet.create({
   main: {
-    backgroundColor: '#F3F9FF',
+    // backgroundColor: '#F3F9FF',
+    backgroundColor: '#FFF',
     padding: 15,
     justifyContent: 'center',
     alignSelf: 'center',
