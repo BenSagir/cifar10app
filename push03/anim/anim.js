@@ -48,7 +48,7 @@ export default function Star({value}) {
     for (let x = 1; x <= num_of_star; x++) {
         stars.push(
             <TouchableWithoutFeedback key={x} onPress={() => {}}>
-                <Animated.View style={x <= rateing ? animateStyle : ''}>
+                <Animated.View style={x === rateing ? animateStyle : ''}>
                     <Single filled={x <= rateing ? true : false} />
                 </Animated.View>
             </TouchableWithoutFeedback>

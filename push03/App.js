@@ -12,13 +12,14 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {Dimensions, StyleSheet, Text, TouchableOpacity, Platform, View, Image} from 'react-native';
 import Star from './anim/anim';
+import Circle from './anim/circle';
 
 function App() {
 
   const [tries, setTries] = useState(1);
   return (
     <View style={styles.main}>
-      <Star value={4 - tries} />
+      <Circle />
     </View >
   );
 }
